@@ -79,8 +79,6 @@ function drawData(){
     vertex(150, 130);
   endShape();
 
-  // rect(0, 0, 120, 80);
-
   noStroke();
   fill(200, 200, 200);
 
