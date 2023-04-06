@@ -138,6 +138,8 @@ function loadVideo(){
 
 function loadStills(){
   // change depending on input folder
+  // scene1outfit1 = 2592
+  // scene2outfit2 = 3192
   var amountOfStills = 3762;
   for(i = 1; i < amountOfStills; i++){
     // imgName give the images in StillImages a name to be referenced
@@ -163,6 +165,8 @@ function keyPressed(){
     }
     else{
       videoIsPlaying = true;
+      // call link PoseNet here so that it is relinked on the loop and the code can run over and over
+      linkPoseNet();
       video_input.loop();
     } 
   }
