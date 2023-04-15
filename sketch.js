@@ -1,7 +1,11 @@
 
 
-let video_input,
+let video_input1, 
+    video_input2,
+    video_input,
     StillImages = [],
+    still_input1,
+    still_input2,
     still_input,
     poseNet,
     pose,
@@ -16,7 +20,9 @@ let video_input,
 function setup(){
   createCanvas(1280, 720);
   // choose the correct input
-  still_input = 'scene2outfit1';
+  still_input1 = 'scene2outfit1';
+  still_input2 = 'scene1outfit1';
+  still_input = still_input1;
   // load in the right JSON file with the information about all of the stills
   stillCoordsJSON = loadJSON(`assets/JsonAndDat_${still_input}_2.json`);
   // preload the stills before the video
@@ -32,9 +38,13 @@ function setup(){
   video_scene2outfit1.hide();
   video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4", loadVideo);
   video_scene2outfit2.hide();
+  video_scene2outfit2_short = createVideo("assets/scene2outfit2_short.mp4", loadVideo);
+  video_scene2outfit2_short.hide();
 
   // choose video
-  video_input = video_scene1outfit2_short;
+  video_input1 = video_scene1outfit2_short;
+  video_input2 = video_scene2outfit2_short;
+  video_input = video_input1;
   video_input.size(width, height);
   frameRate(14);
 
@@ -43,15 +53,30 @@ function setup(){
 
 function draw(){
   if(videoIsPlaying){
-
+    
+    // some sort of event listener here to deal with the loaded data problem
     image(video_input, 0, 0);
+
+    if(video_input.loop()){
+      if(video_input == video_input1){
+        video_input = video_input2;
+        still_input = still_input2;
+        console.log("switched video/still input");
+      }
+      else if(video_input == video_input2){
+        video_input = video_input1;
+        still_input = still_input1;
+        console.log("switched video/still input");
+      }
+    }
 
     console.log(poses.length);
     if(poses.length > 0){
+
       // to see what is being produced from poseNet against the video
       console.log(poses);
 
-      findPositions();
+      video_input.onloadeddata = findPositions() ;
       displayMinimumStill();
 
     }
@@ -66,7 +91,7 @@ function loadVideo(){
   videoIsPlaying = false;
 }
 
-function linkPoseNet(stream){
+function linkPoseNet(){
     // Create a new poseNet method with a single detection
     poseNet = ml5.poseNet(video_input, poseNetLoaded);
     // .on() is an event listener
@@ -79,19 +104,18 @@ function poseNetLoaded(){
 
 function loadStills(){
   // change depending on input folder
-  // scene1outfit1 = 2592
-  // scene2outfit2 = 3192
+  // scene1outfit1 = 2592, scene1outfit2 = 2559, scene2outfit1 = 3762, scene2outfit2 = 3192
   var amountOfStills = 3762;
   for(i = 1; i < amountOfStills; i++){
     // imgName give the images in StillImages a name to be referenced
     var imgName = `${still_input}_${('0000'+i).slice(-4)}`;
     // load in the correct still with reference to leading zeros
     // still input one because its the same as still_input but needs to be different from the string that you defined before
-    var still_input1 = createImg(`assets/${still_input}_output3/${still_input}_${('0000'+i).slice(-4)}.jpg`);
+    var still = createImg(`assets/${still_input}_output3/${still_input}_${('0000'+i).slice(-4)}.jpg`);
     // push to array 
-    StillImages.push(still_input1);
-    StillImages[imgName] = still_input1;
-    still_input1.hide();
+    StillImages.push(still);
+    StillImages[imgName] = still;
+    still.hide();
   }
   console.log(still_input, "- stills loaded in");
 }
@@ -244,7 +268,6 @@ function findPositions(){
 
 function getCurrentFramePositions(array){
   for(let i = 0; i < poses[0].pose.keypoints.length; i++){
-
     array.push(
       [poses[0].pose.keypoints[i].position.x, 
        poses[0].pose.keypoints[i].position.y]);
