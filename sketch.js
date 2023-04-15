@@ -76,7 +76,10 @@ function draw(){
       // to see what is being produced from poseNet against the video
       console.log(poses);
 
-      video_input.onloadeddata = findPositions() ;
+      // guessing that this being called is the think that is causing the error when 'loadeddata' has not been waited for
+
+      // var vid = document.getElementById("video_input");
+      video_input.onloadeddata = findPositions();
       displayMinimumStill();
 
     }
@@ -86,6 +89,10 @@ function draw(){
 }
 
 function loadVideo(){
+
+  // setup the event listener for 'loadeddata' here when you first load the video
+
+
   linkPoseNet();
   video_input.hide();
   videoIsPlaying = false;
@@ -100,6 +107,7 @@ function linkPoseNet(){
 
 function poseNetLoaded(){
   console.log("PoseNet iz Loaded!");
+  return;
 }
 
 function loadStills(){
@@ -131,7 +139,6 @@ function keyPressed(){
     else{
       videoIsPlaying = true;
       // call link PoseNet here so that it is relinked on the loop and the code can run over and over
-      linkPoseNet();
       video_input.loop();
     } 
   }
