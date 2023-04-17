@@ -18,13 +18,11 @@ let video_input1,
     drawKeypoints_toggle = false;
 
 function setup(){
-  createCanvas(1280, 720);
-  // choose the correct input
-  still_input1 = 'scene2outfit1';
-  still_input2 = 'scene1outfit1';
-  still_input = still_input1;
+  createCanvas(1024, 600);
+
+  still_input = 'scene1outfit1';
   // load in the right JSON file with the information about all of the stills
-  stillCoordsJSON = loadJSON(`assets/JsonAndDat_${still_input}_2.json`);
+  stillCoordsJSON = loadJSON(`assets/${still_input}.json`);
   // preload the stills before the video
   loadStills();
   videoIsPlaying = false; 
@@ -32,19 +30,15 @@ function setup(){
   video_scene1outfit1.hide();
   video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4", loadVideo);
   video_scene1outfit2.hide();
-  video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4", loadVideo);
-  video_scene1outfit2.hide();
   video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4", loadVideo);
   video_scene2outfit1.hide();
   video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4", loadVideo);
   video_scene2outfit2.hide();
-  video_scene2outfit2_short = createVideo("assets/scene2outfit2_short.mp4", loadVideo);
-  video_scene2outfit2_short.hide();
 
-  // choose video
-  video_input1 = video_scene1outfit2_short;
-  video_input2 = video_scene2outfit2_short;
-  video_input = video_input1;
+  // // choose video
+  // video_input1 = video_scene1outfit2_short;
+  // video_input2 = video_scene2outfit2_short;
+  video_input = video_scene1outfit2;
   video_input.size(width, height);
   frameRate(14);
 
@@ -57,18 +51,18 @@ function draw(){
     // some sort of event listener here to deal with the loaded data problem
     image(video_input, 0, 0);
 
-    if(video_input.loop()){
-      if(video_input == video_input1){
-        video_input = video_input2;
-        still_input = still_input2;
-        console.log("switched video/still input");
-      }
-      else if(video_input == video_input2){
-        video_input = video_input1;
-        still_input = still_input1;
-        console.log("switched video/still input");
-      }
-    }
+    // if(video_input.loop()){
+    //   if(video_input == video_input1){
+    //     video_input = video_input2;
+    //     still_input = still_input2;
+    //     console.log("switched video/still input");
+    //   }
+    //   else if(video_input == video_input2){
+    //     video_input = video_input1;
+    //     still_input = still_input1;
+    //     console.log("switched video/still input");
+    //   }
+    // }
 
     console.log(poses.length);
     if(poses.length > 0){
@@ -112,14 +106,14 @@ function poseNetLoaded(){
 
 function loadStills(){
   // change depending on input folder
-  // scene1outfit1 = 2592, scene1outfit2 = 2559, scene2outfit1 = 3762, scene2outfit2 = 3192
-  var amountOfStills = 3762;
+  // scene2outfit1 = 3448, scene1outfit1 = 2559
+  var amountOfStills = 2449;
   for(i = 1; i < amountOfStills; i++){
     // imgName give the images in StillImages a name to be referenced
     var imgName = `${still_input}_${('0000'+i).slice(-4)}`;
     // load in the correct still with reference to leading zeros
     // still input one because its the same as still_input but needs to be different from the string that you defined before
-    var still = createImg(`assets/${still_input}_output3/${still_input}_${('0000'+i).slice(-4)}.jpg`);
+    var still = createImg(`assets/${still_input}/${still_input}-${('0000'+i).slice(-4)}.jpg`);
     // push to array 
     StillImages.push(still);
     StillImages[imgName] = still;
