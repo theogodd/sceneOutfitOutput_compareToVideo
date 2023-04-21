@@ -22,8 +22,8 @@ function preload() {
   // video_scene1outfit1.hide();
   video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4");
   video_scene1outfit2.hide();
-  video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
-  video_scene1outfit2_short.hide();
+  // video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
+  // video_scene1outfit2_short.hide();
   // video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4", loadVideo);
   // video_scene2outfit1.hide();
   video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4");
@@ -40,9 +40,9 @@ function setup() {
   loadStills();
 
   // // choose video
-  // video_input1 = video_scene1outfit2_short;
-  // video_input2 = video_scene2outfit2;
-  video_input = video_scene1outfit2_short;
+  video_input1 = video_scene1outfit2;
+  video_input2 = video_scene2outfit2;
+  video_input = video_input1;
   video_input.size(width, height);
   videoIsPlaying = false;
 
@@ -88,7 +88,7 @@ function draw() {
     }
     if(video_input.time() == video_input.duration()){
       poseNet.removeListener('pose', detectedPose)
-        setTimeout(linkPoseNet(), 10);
+        setTimeout(linkPoseNet(), 100);
     }
   }
   drawData();
@@ -186,9 +186,9 @@ function drawData() {
 
   noStroke();
   fill(200, 200, 200);
-  text(("threshold:" + threshold), 5, 65);
+  text(("threshold:" + threshold), 5, 105);
 
-  text((minimumStill + ":"), 5, 115);
+  text((minimumStill + ".jpg:"), 5, 115);
   if (poses.length > 0) {
     if (minimumVal < threshold) {
       fill(0, 200, 0);
