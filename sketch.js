@@ -14,87 +14,96 @@ let video_input1,
   currentPose = {},
   minimumStill,
   minimumVal,
-  threshold,
-  drawKeypoints_toggle = false;
+  videoIsPlaying,
+  dataIsDrawing,
+  threshold;
 
 function preload() {
-  // video_scene1outfit1 = createVideo("assets/scene1outfit1.mp4", loadVideo);
-  // video_scene1outfit1.hide();
+
+  video_scene1outfit1 = createVideo("assets/scene1outfit1.mp4");
+  video_scene1outfit1.hide();
   video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4");
   video_scene1outfit2.hide();
   // video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
   // video_scene1outfit2_short.hide();
-  // video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4", loadVideo);
+  // video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4");
   // video_scene2outfit1.hide();
-  video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4");
-  video_scene2outfit2.hide();
+  // video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4");
+  // video_scene2outfit2.hide();
 }
 
 function setup() {
+
   createCanvas(1024, 600);
 
-  still_input = 'scene1outfit1';
+  still_input1 = 'scene1outfit1';
+  still_input2 = 'scene1outfit2';
+  still_input = still_input1;
   // load in the right JSON file with the information about all of the stills
   stillCoordsJSON = loadJSON(`assets/${still_input}.json`);
   // preload the stills before the video
   loadStills();
 
-  // // choose video
-  video_input1 = video_scene1outfit2;
-  video_input2 = video_scene2outfit2;
-  video_input = video_input1;
+  // choose videos
+  video_input1 = video_scene1outfit1;
+  video_input2 = video_scene1outfit2;
+  video_input = video_input2;
   video_input.size(width, height);
-  videoIsPlaying = false;
-
   video_input.elt.addEventListener("loadeddata", (event) => {
     console.log('added video_input.loadeddata');
     linkPoseNet();
   });
-  videoIsPlaying = false;
 
+  videoIsPlaying = false;
+  dataIsDrawing = false;
   frameRate(24);
   threshold = 5000;
 }
 
 function draw() {
+
   if (videoIsPlaying) {
     image(video_input, 0, 0);
 
-    // // logic to alternate between the two video inputs / JSON inputs
-    // if(video_input.duration() == video_input.time()){
-    //   if(video_input == video_input1){
-    //     video_input = video_input2;
-    //     still_input = still_input2;
-    //     console.log("switched video/still input");
-    //   }
-    //   else if(video_input == video_input2){
-    //     video_input = video_input1;
-    //     still_input = still_input1;
-    //     console.log("switched video/still input");
-    //   }
-    // }
-
-    console.log('poses.length: ' + poses.length);
+    // console.log('poses.length: ' + poses.length);
     if (poses.length > 0) {
+      pose = poses[0].pose;
 
       // to see what is being produced from poseNet against the video
-      console.log(poses);
-      console.log(video_input.time() + ' - current time');
-      console.log(video_input.duration() + ' - duration');
-      // console.log(video_input.elt.loadeddata() + ' - onloadeddata' );
+      // console.log(poses);
+      console.log('current time:' + video_input.time() + '/' + video_input.duration());
 
       findPositions();
       displayMinimumStill();
     }
-    if(video_input.time() == video_input.duration()){
-      poseNet.removeListener('pose', detectedPose)
-        setTimeout(linkPoseNet(), 100);
+
+    // solution to the 'loadeddata' event error - works (mostly) with timeout
+    if (video_input.time() == video_input.duration()) {
+      poseNet.removeListener('pose', detectedPose);
+
+      // logic to get the videos and stills to alternate - not working fully
+      // if (video_input == video_input1) {
+      //   video_input = video_input2;
+      //   still_input = still_input1;
+      // }
+      // else if (video_input == video_input2) {
+      //   video_input = video_input1;
+      //   still_input = still_input2;
+      // }
+      // loadStills();
+
+      setTimeout(linkPoseNet(), 1000);
+      console.log("switched video/still input");
     }
   }
-  drawData();
+
+  if (dataIsDrawing) {
+    drawData();
+  }
 }
 
 function linkPoseNet() {
+
   // Create a new poseNet method with a single detection
   poseNet = ml5.poseNet(video_input, poseNetLoaded);
   // .on() is an event listener
@@ -106,9 +115,22 @@ function poseNetLoaded() {
 }
 
 function loadStills() {
+
   // change depending on input folder
-  // scene2outfit1 = 3448, scene1outfit1 = 2449
-  var amountOfStills = 2449;
+  var amountOfStills = 0;
+  if (still_input == 'scene1outfit1') {
+    amountOfStills = 2449;
+  }
+  else if (still_input == 'scene1outfit2') {
+    amountOfStills = 2222;
+  }
+  else if (still_input == 'scene2outfit1') {
+    amountOfStills = 3448;
+  }
+  else if (still_input == 'scene2outfit2') {
+    amountOfStills = 3067;
+  }
+
   for (i = 1; i < amountOfStills; i++) {
     // imgName give the images in StillImages a name to be referenced
     var imgName = `${still_input}_${('0000' + i).slice(-4)}`;
@@ -125,6 +147,7 @@ function loadStills() {
 
 // control the playing of the video
 function keyPressed() {
+
   // p for PAUSE / PLAY
   if (key == 'p') {
     if (videoIsPlaying) {
@@ -137,6 +160,15 @@ function keyPressed() {
       video_input.loop();
     }
   }
+
+  if (key == 'd') {
+    if (dataIsDrawing) {
+      dataIsDrawing = false; 
+    }
+    else {
+      dataIsDrawing = true;
+    }
+  }  
 
   // adjust threshold
   if (keyCode == LEFT_ARROW) {
@@ -161,10 +193,10 @@ function detectedPose(results) {
 function drawData() {
 
   push();
-  translate(20, height - 150);
+  translate(20, height - 200);
 
-  stroke(200, 200, 200);
-  strokeWeight(1);
+  stroke(255);
+  strokeWeight(2);
   noFill();
 
   beginShape();
@@ -173,22 +205,28 @@ function drawData() {
   vertex(10, 0);
   endShape();
   beginShape();
-  vertex(160, 120);
-  vertex(160, 130)
-  vertex(150, 130);
+  vertex(150, 170);
+  vertex(150, 180)
+  vertex(140, 180);
   endShape();
 
   noStroke();
-  fill(200, 200, 200);
+  fill(255);
+  textSize(12);
 
-  text(("video_input:" + video_input), 5, 15);
-  text(("JSON_file:" + still_input), 5, 25);
+  let video_input_name = 'waiting for input...';
+  if (video_input == video_input1) {
+    video_input_name = 'scene1outfit1';
+  }
+  else {
+    video_input_name = 'scene1outfit2';
+  }
 
-  noStroke();
-  fill(200, 200, 200);
-  text(("threshold:" + threshold), 5, 105);
+  text(("video_input: " + video_input_name), 5, 15);
+  text(("JSON_file:   " + still_input), 5, 25);
+  text(("threshold:"    + threshold), 5, 155);
+  text((minimumStill    + ".jpg:"), 5, 165);
 
-  text((minimumStill + ".jpg:"), 5, 115);
   if (poses.length > 0) {
     if (minimumVal < threshold) {
       fill(0, 200, 0);
@@ -196,25 +234,60 @@ function drawData() {
     else {
       fill(255, 127, 0);
     }
-    text((minimumVal), 5, 125);
+
+    text((minimumVal), 5, 175);
+    pop();
+
+    // draw its keypoints
+    if (minimumVal < threshold) {
+      fill(0, 200, 0);
+    }
+    for (let keypoint of pose.keypoints) {
+      let x = map(keypoint.position.x, 0, width, - 140, 190);
+      let y = map(keypoint.position.y, 0, height, height - 220, height - 50);
+      fill(255);
+      beginShape();
+      vertex(x, y - 3);
+      vertex(x + 2, y);
+      vertex(x, y + 3);
+      vertex(x - 2, y);
+      endShape(CLOSE);
+    }
+
+    for (let i = 0; i < poses.length; i++) {
+      let skeleton = poses[i].skeleton;
+      // For every skeleton, loop through all body connections
+      for (let j = 0; j < skeleton.length; j++) {
+        let partA = skeleton[j][0];
+        let partB = skeleton[j][1];
+        let xa = map(partA.position.x, 0, width, - 140, 190);
+        let xb = map(partB.position.x, 0, width, - 140, 190);
+        let ya = map(partA.position.y, 0, height, height - 220, height - 50);
+        let yb = map(partB.position.y, 0, height, height - 220, height - 50);
+        strokeWeight(1);
+        stroke(255);
+        line(xa, ya, xb, yb);
+      }
+    }
   }
-  pop();
 }
 
 // find positions creates an object and array to store current frame positions and the distances of each still. then calles the function to fill currentFramePositions[], and calls the functions to calc the distances of each still. finally, findLowestDistance() is called and the lowest distance is printed to the console with they key and the value.
 function findPositions() {
+
   let currentFramePositions = [];
   let eachFrameDistance = {};
   // call the get current frame positions function
   getCurrentFramePositions(currentFramePositions);
   getFrameJSONDistances(currentFramePositions, eachFrameDistance);
   // print out all the distances of the stills from the current pose
-  console.log("Each Frame Distance:", eachFrameDistance);
+  // console.log("Each Frame Distance:", eachFrameDistance);
   // call function to find the closest image to the current still
   findLowestDistance(eachFrameDistance);
 }
 
 function getCurrentFramePositions(array) {
+
   for (let i = 0; i < poses[0].pose.keypoints.length; i++) {
     array.push(
       [poses[0].pose.keypoints[i].position.x,
@@ -222,7 +295,7 @@ function getCurrentFramePositions(array) {
   }
 }
 
-function getFrameJSONDistances(cFP, eFD) {
+function getFrameJSONDistances(cFP, eFD){
 
   // for into stills obj, assigning to key
   for (const key in stillCoordsJSON) {
@@ -246,21 +319,19 @@ function findLowestDistance(eFD) {
   let objKey = Object.keys(eFD);
   // now global variable
   minimumVal = Math.min(...objVal);
-  console.log(`Minimum Value: ${minimumVal}`);
+  // console.log(`Minimum Value: ${minimumVal}`);
 
   // find the corresponding key
   // ignoring case of empty list for conciseness
   minimumStill = objKey[0];
   // (changed i=1 to i=0 watch out)
   for (var i = 0; i < objKey.length; i++) {
-
     var currentStill = objKey[i];
     if (eFD[currentStill] < eFD[minimumStill]) {
-
       minimumStill = currentStill;
     }
   }
-  console.log(`Minimum Still: ${minimumStill}`);
+  // console.log(`Minimum Still: ${minimumStill}`);
 }
 
 function displayMinimumStill() {
