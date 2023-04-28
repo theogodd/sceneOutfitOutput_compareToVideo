@@ -20,6 +20,14 @@ let video_input1,
 
 function preload() {
 
+  still_input1 = 'scene1outfit1';
+  still_input2 = 'scene1outfit2';
+  still_input = still_input1;
+  // load in the right JSON file with the information about all of the stills
+  stillCoordsJSON = loadJSON(`assets/${still_input}.json`);
+  // preload the stills before the video
+  loadStills();
+
   video_scene1outfit1 = createVideo("assets/scene1outfit1.mp4");
   video_scene1outfit1.hide();
   video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4");
@@ -35,14 +43,6 @@ function preload() {
 function setup() {
 
   createCanvas(1024, 600);
-
-  still_input1 = 'scene1outfit1';
-  still_input2 = 'scene1outfit2';
-  still_input = still_input1;
-  // load in the right JSON file with the information about all of the stills
-  stillCoordsJSON = loadJSON(`assets/${still_input}.json`);
-  // preload the stills before the video
-  loadStills();
 
   // choose videos
   video_input1 = video_scene1outfit1;
@@ -81,18 +81,7 @@ function draw() {
     if (video_input.time() == video_input.duration()) {
       poseNet.removeListener('pose', detectedPose);
 
-      // logic to get the videos and stills to alternate - not working fully
-      // if (video_input == video_input1) {
-      //   video_input = video_input2;
-      //   still_input = still_input1;
-      // }
-      // else if (video_input == video_input2) {
-      //   video_input = video_input1;
-      //   still_input = still_input2;
-      // }
-      // loadStills();
-
-      setTimeout(linkPoseNet(), 1000);
+      setTimeout(linkPoseNet(), 100);
       console.log("switched video/still input");
     }
   }
