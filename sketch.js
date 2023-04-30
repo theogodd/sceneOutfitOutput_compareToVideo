@@ -28,12 +28,12 @@ function preload() {
   // preload the stills before the video
   loadStills();
 
-  video_scene1outfit1 = createVideo("assets/scene1outfit1.mp4");
-  video_scene1outfit1.hide();
-  video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4");
-  video_scene1outfit2.hide();
-  // video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
-  // video_scene1outfit2_short.hide();
+  // video_scene1outfit1 = createVideo("assets/scene1outfit1.mp4");
+  // video_scene1outfit1.hide();
+  // video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4");
+  // video_scene1outfit2.hide();
+  video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
+  video_scene1outfit2_short.hide();
   // video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4");
   // video_scene2outfit1.hide();
   // video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4");
@@ -45,8 +45,8 @@ function setup() {
   createCanvas(1024, 600);
 
   // choose videos
-  video_input1 = video_scene1outfit1;
-  video_input2 = video_scene1outfit2;
+  // video_input1 = video_scene1outfit1;
+  video_input2 = video_scene1outfit2_short;
   video_input = video_input2;
   video_input.size(width, height);
   video_input.elt.addEventListener("loadeddata", (event) => {
@@ -71,17 +71,18 @@ function draw() {
 
       // to see what is being produced from poseNet against the video
       // console.log(poses);
-      console.log('current time:' + video_input.time() + '/' + video_input.duration());
+      // console.log('current time:' + video_input.time() + '/' + video_input.duration());
 
       findPositions();
       displayMinimumStill();
     }
 
-    // solution to the 'loadeddata' event error - works (mostly) with timeout
-    if (video_input.time() == video_input.duration()) {
+    // // solution to the 'loadeddata' event error - works (mostly) with timeout
+    console.log(video_input.time());
+    if (video_input.time() >= video_input.duration() - 1) {
       poseNet.removeListener('pose', detectedPose);
 
-      setTimeout(linkPoseNet(), 100);
+      setTimeout(addPosenetListener, 100);
       console.log("switched video/still input");
     }
   }
@@ -91,8 +92,12 @@ function draw() {
   }
 }
 
-function linkPoseNet() {
+function addPosenetListener() {
+  poseNet.addEventListener('pose', detectedPose);
+}
 
+function linkPoseNet() {
+  console.log("Linking posenet");
   // Create a new poseNet method with a single detection
   poseNet = ml5.poseNet(video_input, poseNetLoaded);
   // .on() is an event listener
@@ -101,6 +106,7 @@ function linkPoseNet() {
 
 function poseNetLoaded() {
   console.log("PoseNet iz Loaded!");
+  console.log(poseNet);
 }
 
 function loadStills() {
