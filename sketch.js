@@ -20,7 +20,7 @@ let video_input1,
 
 function preload() {
 
-  still_input1 = 'scene1outfit1';
+  still_input1 = 'scene2outfit2';
   still_input2 = 'scene1outfit2';
   still_input = still_input1;
   // load in the right JSON file with the information about all of the stills
@@ -32,10 +32,10 @@ function preload() {
   // video_scene1outfit1.hide();
   // video_scene1outfit2 = createVideo("assets/scene1outfit2.mp4");
   // video_scene1outfit2.hide();
-  video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
-  video_scene1outfit2_short.hide();
-  // video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4");
-  // video_scene2outfit1.hide();
+  // video_scene1outfit2_short = createVideo("assets/scene1outfit2_short.mp4");
+  // video_scene1outfit2_short.hide();
+  video_scene2outfit1 = createVideo("assets/scene2outfit1.mp4");
+  video_scene2outfit1.hide();
   // video_scene2outfit2 = createVideo("assets/scene2outfit2.mp4");
   // video_scene2outfit2.hide();
 }
@@ -46,15 +46,19 @@ function setup() {
 
   // choose videos
   // video_input1 = video_scene1outfit1;
-  video_input2 = video_scene1outfit2_short;
+  video_input2 = video_scene2outfit1;
   video_input = video_input2;
   video_input.size(width, height);
+  // remove the sound - inportant if playing the Gerry/V stuff from the computer
+  video_input.volume(0);
+  // normal but cool to know
+  video_input.speed(1);
   video_input.elt.addEventListener("loadeddata", (event) => {
     console.log('added video_input.loadeddata');
     linkPoseNet();
   });
 
-  videoIsPlaying = false;
+  videoIsPlaying = true;
   dataIsDrawing = false;
   frameRate(24);
   threshold = 5000;
@@ -78,12 +82,15 @@ function draw() {
     }
 
     // // solution to the 'loadeddata' event error - works (mostly) with timeout
-    console.log(video_input.time());
-    if (video_input.time() >= video_input.duration() - 1) {
+    // console.log(video_input.time());
+    if (video_input.time() >= video_input.duration() - 0.1) {
       poseNet.removeListener('pose', detectedPose);
-
-      setTimeout(addPosenetListener, 100);
-      console.log("switched video/still input");
+      console.log('removedListener:', poseNet);
+      // reduce amount of errors
+      video_input.stop();
+      image(video_input, 0, 0);
+      // relink poseNet and play video once this is done
+      setTimeout(linkPoseNet, 100);
     }
   }
 
@@ -93,7 +100,7 @@ function draw() {
 }
 
 function addPosenetListener() {
-  poseNet.addEventListener('pose', detectedPose);
+  poseNet.addListener('pose', detectedPose);
 }
 
 function linkPoseNet() {
@@ -107,6 +114,7 @@ function linkPoseNet() {
 function poseNetLoaded() {
   console.log("PoseNet iz Loaded!");
   console.log(poseNet);
+  video_input.play();
 }
 
 function loadStills() {
